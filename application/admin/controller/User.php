@@ -52,6 +52,8 @@ class User extends Base
             }else{
                 $status = 1;
                 $result = '验证成功！点击确认进入系统！';
+                $loginTime = time();
+                $res->where('id',$res->id)->update(['login_time' => $loginTime ]);
                 $res->setInc('login_count');
                 Session::set('user_id',$res->id);
                 Session::set('user_info',$res->getData());
