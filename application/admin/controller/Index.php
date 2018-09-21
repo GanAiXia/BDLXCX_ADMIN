@@ -16,7 +16,7 @@ class Index extends Base
 //        halt($userinfo);
         $this->assign('loginTime',$loginTime);
         $this->assign('loginTimes',$loginTimes);
-        $this->assign('百达丽微信后台首页');
+        $this->assign('title','百达丽微信后台首页');
         return $this->fetch('index');
     }
 }

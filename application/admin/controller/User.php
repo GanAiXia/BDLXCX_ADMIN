@@ -46,6 +46,7 @@ class User extends Base
                 'password' => md5($data['pwd'])
             ];
             $res = UserModel::get($map);
+//            halt($res);
             if (null == $res){
                 $result = '用户名或者密码错误';
 

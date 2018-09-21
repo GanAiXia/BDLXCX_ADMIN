@@ -30,7 +30,7 @@ class Base extends Controller
     protected function isLogin()
     {
         if (!Session::has('user_id')){
-            return $this->error('你都没有登录！想干嘛？','admin/user/login');
+            return $this->error('先登录一下呗！','admin/user/login');
         }
     }
 }
