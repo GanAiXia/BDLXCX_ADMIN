@@ -41,7 +41,6 @@ class Member extends Base
             $code = $res['code'];
             $api = "https://api.weixin.qq.com/sns/jscode2session?appid=".$appid."&secret=".$secret."&js_code=".$code."&grant_type=authorization_code";
 
-
             function httpGet($url){
                 $curl = curl_init();
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, 2);
@@ -64,24 +63,94 @@ class Member extends Base
         $res = Request::post();
 //        halt($res);
         if ($res){
-            $data =  [
-                'username' => $res['userName'],
-                'nickname' => $res['nickName'],
-                'openid'   => $res['openId'],
-                'telphone' => $res['userPhone'],
-                'addres'   => $res['userAddrDetail'],
-                'sex'      => $res['gender'],
-                'avatarUrl'=> $res['avatarUrl']
-            ];
-            $resdata  = MemberModel::create($data);
-            if ($resdata){
-                return Json::create(['data'=>$data,'res'=>1]);
+            $userDef = $res['userDef'];
+            $openid = $res['openId'];
+            if ($userDef){
+                $resuser = MemberModel::where('openid',$openid)
+                            ->select();
+
+                for ($i = 0; $i < count($resuser); $i++){
+                    $userid = $resuser[$i]['id'];
+//                    halt($userid);
+                    $demo = MemberModel::get($userid);
+                    $demo->userDef = "false";
+                    $demo->save();
+//                    halt($demo);
+                }
+                $data =  [
+                    'username' => $res['userName'],
+                    'nickname' => $res['nickName'],
+                    'openid'   => $res['openId'],
+                    'telphone' => $res['userPhone'],
+                    'addres'   => $res['userAddrDetail'],
+                    'sex'      => $res['gender'],
+                    'avatarUrl'=> $res['avatarUrl'],
+                    'userDef'  => 'true'
+                ];
+                $resdata  = MemberModel::create($data);
+                if ($resdata){
+                    return Json::create(['data'=>$data,'res'=>1]);
+                }else{
+                    return Json::create(['data'=>$data,'res'=>0]);
+                }
+
             }else{
-                return Json::create(['data'=>$data,'res'=>0]);
+                $data =  [
+                    'username' => $res['userName'],
+                    'nickname' => $res['nickName'],
+                    'openid'   => $res['openId'],
+                    'telphone' => $res['userPhone'],
+                    'addres'   => $res['userAddrDetail'],
+                    'sex'      => $res['gender'],
+                    'avatarUrl'=> $res['avatarUrl'],
+                    'userDef'  => 'false'
+                ];
+                $resdata  = MemberModel::create($data);
+                if ($resdata){
+                    return Json::create(['data'=>$data,'res'=>1]);
+                }else{
+                    return Json::create(['data'=>$data,'res'=>0]);
+                }
+
             }
 
         }else{
             return Json::create(['res'=>0]);
         }
+    }
+
+    public function getAddr()
+    {
+        $data = Request::post('openid');
+
+        $res = MemberModel::where('openid',$data)
+            ->select();
+        return $res;
+    }
+
+    public function userDefchange()
+    {
+        $res = Request::post();
+        $openid = $res['openId'];
+        $userIndex = $res['userDefIndex'];
+        $resuser = MemberModel::where('openid',$openid)
+            ->select();
+
+        for ($i = 0; $i < count($resuser); $i++){
+            $userid = $resuser[$i]['id'];
+//                    halt($userid);
+            $demo = MemberModel::get($userid);
+            $demo->userDef = "false";
+            $demo->save();
+//                    halt($demo);
+        }
+
+        $userdefnewid = $resuser[$userIndex]['id'];
+        $userdefnew = MemberModel::get($userdefnewid);
+        $userdefnew->userDef = "true";
+        $userdefnew->save();
+
+        return Json::create(['res'=>'修改成功']);
+
     }
 }
