@@ -85,7 +85,11 @@ class Member extends Base
                     'addres'   => $res['userAddrDetail'],
                     'sex'      => $res['gender'],
                     'avatarUrl'=> $res['avatarUrl'],
-                    'userDef'  => 'true'
+                    'userDef'  => 'true',
+                    'sheng'    => $res['sheng'],
+                    'shi'      => $res['shi'],
+                    'qu'       => $res['qu'],
+                    'addrdetail'=> $res['addrDetail']
                 ];
                 $resdata  = MemberModel::create($data);
                 if ($resdata){
@@ -103,7 +107,11 @@ class Member extends Base
                     'addres'   => $res['userAddrDetail'],
                     'sex'      => $res['gender'],
                     'avatarUrl'=> $res['avatarUrl'],
-                    'userDef'  => 'false'
+                    'userDef'  => 'false',
+                    'sheng'    => $res['sheng'],
+                    'shi'      => $res['shi'],
+                    'qu'       => $res['qu'],
+                    'addrdetail'=> $res['addrDetail']
                 ];
                 $resdata  = MemberModel::create($data);
                 if ($resdata){
@@ -152,5 +160,121 @@ class Member extends Base
 
         return Json::create(['res'=>'修改成功']);
 
+    }
+
+    public function delAddr()
+    {
+        $data = Request::post();
+        $openid = $data['openId'];
+        $delIndex = $data['delIndex'];
+        $resuser = MemberModel::where('openid',$openid)
+            ->select();
+        $userId = $resuser[$delIndex]['id'];
+        $userDef = $resuser[$delIndex]['userDef'];
+//        halt($userDef);
+        if ($userDef == "false"){
+            $res = MemberModel::where('id',$userId)
+                ->delete();
+        }else{
+            $res = MemberModel::where('id',$userId)
+                ->delete();
+            $userDefault = MemberModel::where('openid',$openid)
+                ->select();
+            if (!empty($userDefault)){
+                $userDefaultid = $userDefault[0]['id'];
+                $userdefnew = MemberModel::get($userDefaultid);
+                $userdefnew->userDef = "true";
+                $userdefnew->save();
+            }
+        }
+
+        return Json::create(['res'=>1]);
+
+    }
+
+    public function editAddr()
+    {
+        $data = Request::post();
+        $openid = $data['openId'];
+        $editIndex = $data['editIndex'];
+        $resuser = MemberModel::where('openid',$openid)
+            ->select();
+//        halt($resuser[$editIndex]);
+        return $resuser[$editIndex];
+    }
+
+    public function memberEdit()
+    {
+        $res = Request::post();
+//        halt($res);
+        if ($res){
+            $userDef = $res['userDef'];
+            $openid = $res['openId'];
+            $editid = $res['editIndex'];
+            $resuser = MemberModel::where('openid',$openid)
+                ->select();
+            if ($userDef === 'true'){
+                for ($i = 0; $i < count($resuser); $i++){
+                    $userid = $resuser[$i]['id'];
+//                    halt($userid);
+                    $demo = MemberModel::get($userid);
+                    $demo->userDef = "false";
+                    $demo->save();
+//                    halt($demo);
+                }
+                $data =  [
+                    'username' => $res['userName'],
+                    'nickname' => $res['nickName'],
+                    'openid'   => $res['openId'],
+                    'telphone' => $res['userPhone'],
+                    'addres'   => $res['userAddrDetail'],
+                    'sex'      => $res['gender'],
+                    'avatarUrl'=> $res['avatarUrl'],
+                    'userDef'  => 'true',
+                    'sheng'    => $res['sheng'],
+                    'shi'      => $res['shi'],
+                    'qu'       => $res['qu'],
+                    'addrdetail'=> $res['addrDetail']
+                ];
+                $eidtUserId = $resuser[$editid]['id'];
+                $resdata  = MemberModel::where('id',$eidtUserId)
+                    ->update($data);
+//                halt($resdata);
+                if ($resdata){
+                    return Json::create(['data'=>$data,'res'=>1]);
+                }else{
+                    return Json::create(['data'=>$data,'res'=>0]);
+                }
+
+            }else{
+                $data =  [
+                    'username' => $res['userName'],
+                    'nickname' => $res['nickName'],
+                    'openid'   => $res['openId'],
+                    'telphone' => $res['userPhone'],
+                    'addres'   => $res['userAddrDetail'],
+                    'sex'      => $res['gender'],
+                    'avatarUrl'=> $res['avatarUrl'],
+                    'userDef'  => 'false',
+                    'sheng'    => $res['sheng'],
+                    'shi'      => $res['shi'],
+                    'qu'       => $res['qu'],
+                    'addrdetail'=> $res['addrDetail']
+                ];
+                $eidtUserId = $resuser[$editid]['id'];
+                $resdata  = MemberModel::where('id',$eidtUserId)
+                    ->update($data);
+//                halt($resdata);
+                if ($resdata){
+                    return Json::create(['data'=>$data,'res'=>1]);
+                }else{
+                    return Json::create(['data'=>$data,'res'=>0]);
+                }
+
+            }
+
+        }else{
+            return Json::create(['res'=>0]);
+        }
     }
 }
